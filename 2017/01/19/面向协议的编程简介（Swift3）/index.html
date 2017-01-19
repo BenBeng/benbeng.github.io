@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="本文翻译自RayWenderlich的 Introducing Protocol-Oriented Programming in Swift3
+
+假设你正在开发一款赛车游戏。你可以驾驶小汽车、摩托车，甚至是一架飞机。通常的做法是使用面向对象的设计来开发这款游戏，把有相似性的逻辑封装到对象里，然后继承对象。
+这种设计可以满足要求，但是也有一些缺点。比如说，你需要给汽车的背景加一些气体和飞鸟，就没有">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面向协议的编程简介（Swift3）">
+<meta property="og:url" content="http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/index.html">
+<meta property="og:site_name" content="BenBeng">
+<meta property="og:description" content="本文翻译自RayWenderlich的 Introducing Protocol-Oriented Programming in Swift3
+
+假设你正在开发一款赛车游戏。你可以驾驶小汽车、摩托车，甚至是一架飞机。通常的做法是使用面向对象的设计来开发这款游戏，把有相似性的逻辑封装到对象里，然后继承对象。
+这种设计可以满足要求，但是也有一些缺点。比如说，你需要给汽车的背景加一些气体和飞鸟，就没有">
+<meta property="og:image" content="https://koenig-media.raywenderlich.com/uploads/2015/06/protocols-extend.png">
+<meta property="og:image" content="https://koenig-media.raywenderlich.com/uploads/2016/11/secrets.png">
+<meta property="og:updated_time" content="2017-01-19T07:17:38.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="面向协议的编程简介（Swift3）">
+<meta name="twitter:description" content="本文翻译自RayWenderlich的 Introducing Protocol-Oriented Programming in Swift3
+
+假设你正在开发一款赛车游戏。你可以驾驶小汽车、摩托车，甚至是一架飞机。通常的做法是使用面向对象的设计来开发这款游戏，把有相似性的逻辑封装到对象里，然后继承对象。
+这种设计可以满足要求，但是也有一些缺点。比如说，你需要给汽车的背景加一些气体和飞鸟，就没有">
+<meta name="twitter:image" content="https://koenig-media.raywenderlich.com/uploads/2015/06/protocols-extend.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>面向协议的编程简介（Swift3）</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+    <link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+    <!-- jquery -->
+    <script src="/lib/jquery/jquery.min.js"></script>
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&text=面向协议的编程简介（Swift3）"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&title=面向协议的编程简介（Swift3）"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&is_video=false&description=面向协议的编程简介（Swift3）"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=面向协议的编程简介（Swift3）&body=Check out this article: http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&title=面向协议的编程简介（Swift3）"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&title=面向协议的编程简介（Swift3）"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&title=面向协议的编程简介（Swift3）"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&title=面向协议的编程简介（Swift3）"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&name=面向协议的编程简介（Swift3）&description="><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#开始"><span class="toc-number">1.</span> <span class="toc-text">开始</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#定义遵从协议的类型"><span class="toc-number">2.</span> <span class="toc-text">定义遵从协议的类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用默认实现来扩展协议"><span class="toc-number">3.</span> <span class="toc-text">使用默认实现来扩展协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#为什么不用基类？"><span class="toc-number">4.</span> <span class="toc-text">为什么不用基类？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#覆盖默认行为"><span class="toc-number">5.</span> <span class="toc-text">覆盖默认行为</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#扩展协议"><span class="toc-number">6.</span> <span class="toc-text">扩展协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#对Swift标准库的影响"><span class="toc-number">7.</span> <span class="toc-text">对Swift标准库的影响</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#去比赛"><span class="toc-number">8.</span> <span class="toc-text">去比赛</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#合到一起"><span class="toc-number">8.1.</span> <span class="toc-text">合到一起</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#最高时速"><span class="toc-number">8.2.</span> <span class="toc-text">最高时速</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#更加通用"><span class="toc-number">8.3.</span> <span class="toc-text">更加通用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#更加Swift"><span class="toc-number">8.4.</span> <span class="toc-text">更加Swift</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#操作符"><span class="toc-number">9.</span> <span class="toc-text">操作符</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#接下来"><span class="toc-number">10.</span> <span class="toc-text">接下来</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index width mx-auto px2 my4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        面向协议的编程简介（Swift3）
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">BenBeng</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2017-01-19T07:13:08.000Z" itemprop="datePublished">2017-01-19</time>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/翻译/">翻译</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <blockquote>
+<p>本文翻译自RayWenderlich的 <a href="https://www.raywenderlich.com/148448/introducing-protocol-oriented-programming" target="_blank" rel="external">Introducing Protocol-Oriented Programming in Swift3</a></p>
+</blockquote>
+<p><br><br>假设你正在开发一款赛车游戏。你可以驾驶小汽车、摩托车，甚至是一架飞机。通常的做法是使用<a href="https://www.raywenderlich.com/81952/intro-object-oriented-design-swift-part-1" target="_blank" rel="external">面向对象的设计</a>来开发这款游戏，把有相似性的逻辑封装到对象里，然后继承对象。</p>
+<p>这种设计可以满足要求，但是也有一些缺点。比如说，你需要给汽车的背景加一些气体和飞鸟，就没有比较好的方法把汽车的功能组件拆分出来重用。</p>
+<p>这种情况下用<strong>协议</strong>就非常好。</p>
+<p>Swift中可以通过使用协议来确保已有的<code>class</code>、<code>struct</code>和<code>enum</code>有这些接口。这在泛型上也适用。Swift2 已经可以扩展协议，并提供默认实现。Swift 3 最终改善了操作符的一致性?(operator conformance)，并用于标准库中的新数字协议?(numeric protocols)。</p>
+<p>协议非常强大，能改变你编码的方式。在本教程中，你将会创建和使用协议，用面向协议的编程模式来让你的代码更具扩展性。</p>
+<p>你也将看到Swift小组是如何使用协议扩展来改进Swift标准库的，以及对你写的代码的影响。</p>
+<h2 id="开始"><a href="#开始" class="headerlink" title="开始"></a>开始</h2><p>先创建一个新的playground。在Xcode中选择 <code>File\New\Playground</code>，然后命名为<strong>SwiftProtocols</strong>。因为本教程的代码和平台无关，所以你可以选择任意平台。点击<strong>Next</strong>选择在哪保存文件，最后点击<strong>Create</strong>。</p>
+<p>当playground打开后，添加下面的代码。<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">protocol</span> <span class="title">Bird</span> </span>&#123;</div><div class="line">  <span class="keyword">var</span> name: <span class="type">String</span> &#123; <span class="keyword">get</span> &#125;</div><div class="line">  <span class="keyword">var</span> canFly: <span class="type">Bool</span> &#123; <span class="keyword">get</span> &#125;</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">protocol</span> <span class="title">Flyable</span> </span>&#123;</div><div class="line">  <span class="keyword">var</span> airspeedVelocity: <span class="type">Double</span> &#123; <span class="keyword">get</span> &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这里定义两个简单的协议 <strong>Bird</strong> 和 <strong>Flyable</strong>. Bird有2个属性 <code>name</code> 和 <code>canFly</code>。Flyable有一个属性 <code>airspeedVelocity</code>.</p>
+<p>在以前，你可能会从一个<code>Flyable</code>的基类开始，然后继承基类来定义<code>Bird</code>和其他可以飞的东西，例如飞机。而现在，一切都从协议开始！这样你对功能的封装就不需要基类了。</p>
+<p>接下来当你开始定义实际的类型时，就能看到协议会使整个系统变得更灵活。</p>
+<h2 id="定义遵从协议的类型"><a href="#定义遵从协议的类型" class="headerlink" title="定义遵从协议的类型"></a>定义遵从协议的类型</h2><p>在playground中添加下面的<code>struct</code>定义:<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">struct</span> <span class="title">FlappyBird</span>: <span class="title">Bird</span>, <span class="title">Flyable</span> </span>&#123;</div><div class="line">  <span class="keyword">let</span> name: <span class="type">String</span></div><div class="line">  <span class="keyword">let</span> flappyAmplitude: <span class="type">Double</span></div><div class="line">  <span class="keyword">let</span> flappyFrequency: <span class="type">Double</span></div><div class="line">  <span class="keyword">let</span> canFly = <span class="literal">true</span></div><div class="line"> </div><div class="line">  <span class="keyword">var</span> airspeedVelocity: <span class="type">Double</span> &#123;</div><div class="line">    <span class="keyword">return</span> <span class="number">3</span> * flappyFrequency * flappyAmplitude</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这定义了一个新的 struct <strong>FlappyBird</strong>，遵从<code>Bird</code>和<code>Flyable</code>协议。属性<code>airspeedVelocity</code>是通过<code>flappyFrequency</code>和<code>flappyAmplitude</code>计算出来的。作为flappy bird，<code>canFly</code>属性返回的是<code>true</code>。</p>
+<p>然后在playground下面添加2个struct的定义<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Penguin</span>: <span class="title">Bird</span> </span>&#123;</div><div class="line">  <span class="keyword">let</span> name: <span class="type">String</span></div><div class="line">  <span class="keyword">let</span> canFly = <span class="literal">false</span></div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">struct</span> <span class="title">SwiftBird</span>: <span class="title">Bird</span>, <span class="title">Flyable</span> </span>&#123;</div><div class="line">  <span class="keyword">var</span> name: <span class="type">String</span> &#123; <span class="keyword">return</span> <span class="string">"Swift <span class="subst">\(version)</span>"</span> &#125;</div><div class="line">  <span class="keyword">let</span> version: <span class="type">Double</span></div><div class="line">  <span class="keyword">let</span> canFly = <span class="literal">true</span></div><div class="line"> </div><div class="line">  <span class="comment">// Swift is FASTER every version!</span></div><div class="line">  <span class="keyword">var</span> airspeedVelocity: <span class="type">Double</span> &#123; <span class="keyword">return</span> version * <span class="number">1000.0</span> &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>Penguin(企鹅)是鸟，但是不会飞。还好你没有用继承，要不所有鸟都会飞了。使用协议，你可以定义功能性的组件，然后让相关对象遵从协议。</p>
+<p>到目前你看到的代码是有些冗余的。每个<code>Bird</code>类型都需要声明自己能不能飞，即使我们的代码中已经有一个<code>Flyable</code>的概念了。</p>
+<h2 id="使用默认实现来扩展协议"><a href="#使用默认实现来扩展协议" class="headerlink" title="使用默认实现来扩展协议"></a>使用默认实现来扩展协议</h2><p>通过协议扩展，你可以定义协议的默认行为。在<code>Bird</code>协议下面添加如下代码：<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">extension</span> <span class="title">Bird</span> </span>&#123;</div><div class="line">  <span class="comment">// Flyable birds can fly!</span></div><div class="line">  <span class="keyword">var</span> canFly: <span class="type">Bool</span> &#123; <span class="keyword">return</span> <span class="keyword">self</span> <span class="keyword">is</span> <span class="type">Flyable</span> &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>上面的代码定义了一个<code>Bird</code>的扩展，当类型也是<code>Flyable</code>时为<code>canFly</code>返回<code>true</code>。换句话说，<code>Flyable</code>的鸟不用再显示声明自己会飞了。</p>
+<p><img src="https://koenig-media.raywenderlich.com/uploads/2015/06/protocols-extend.png" alt=""></p>
+<p>在<code>FlappyBird</code>、<code>SwiftBird</code>和<code>Penguin</code>的声明中删除 <code>let canFly = …</code> 。可以看到playground编译成功了，因为现在由协议扩展来处理默认实现了。</p>
+<h2 id="为什么不用基类？"><a href="#为什么不用基类？" class="headerlink" title="为什么不用基类？"></a>为什么不用基类？</h2><p>协议扩展和默认实现可能看起来和使用基类或者其他语言中的<a href="https://en.wikipedia.org/wiki/Abstract_type" target="_blank" rel="external">抽象类</a>有些类似，但是在Swift中协议提供了一些关键优势：</p>
+<ul>
+<li>因为类型可以遵从不止一个协议，所以可以用多个协议的中默认行为来“装饰”类型。不像某些编程语言中的类的多继承，协议扩展不会引入额外的状态。</li>
+<li>协议可以被<code>class</code>、<code>struct</code>、<code>enum</code>遵从。基类和继承只能用于<code>class</code>。</li>
+</ul>
+<p>换言之，协议扩展不仅能为类，还能为<strong>值类型</strong>提供默认行为。</p>
+<p>你已经在struct中使用协议了。接下来在playground中添加如下的枚举定义：<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">enum</span> <span class="title">UnladenSwallow</span>: <span class="title">Bird</span>, <span class="title">Flyable</span> </span>&#123;</div><div class="line">  <span class="keyword">case</span> african</div><div class="line">  <span class="keyword">case</span> european</div><div class="line">  <span class="keyword">case</span> unknown</div><div class="line"> </div><div class="line">  <span class="keyword">var</span> name: <span class="type">String</span> &#123;</div><div class="line">    <span class="keyword">switch</span> <span class="keyword">self</span> &#123;</div><div class="line">      <span class="keyword">case</span> .african:</div><div class="line">        <span class="keyword">return</span> <span class="string">"African"</span></div><div class="line">      <span class="keyword">case</span> .european:</div><div class="line">        <span class="keyword">return</span> <span class="string">"European"</span></div><div class="line">      <span class="keyword">case</span> .unknown:</div><div class="line">        <span class="keyword">return</span> <span class="string">"What do you mean? African or European?"</span></div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line"> </div><div class="line">  <span class="keyword">var</span> airspeedVelocity: <span class="type">Double</span> &#123;</div><div class="line">    <span class="keyword">switch</span> <span class="keyword">self</span> &#123;</div><div class="line">    <span class="keyword">case</span> .african:</div><div class="line">      <span class="keyword">return</span> <span class="number">10.0</span></div><div class="line">    <span class="keyword">case</span> .european:</div><div class="line">      <span class="keyword">return</span> <span class="number">9.9</span></div><div class="line">    <span class="keyword">case</span> .unknown:</div><div class="line">      <span class="built_in">fatalError</span>(<span class="string">"You are thrown from the bridge of death!"</span>)</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>对于其他值类型，你需要做的就是定义正确的属性让<code>UnladenSwallow</code>能遵从这两个协议。因此<code>UnladenSwallow</code>也有<code>canFly</code>的默认实现。</p>
+<h2 id="覆盖默认行为"><a href="#覆盖默认行为" class="headerlink" title="覆盖默认行为"></a>覆盖默认行为</h2><p>通过遵从<code>Bird</code>协议，<code>UnladenSwallow</code>类型自动获得了<code>canFly</code>的实现。但是我们想要 <code>UnladenSwallow.unknown</code>给<code>canFly</code>返回<code>false</code>。可以覆盖默认实现吗？当然可以。添加下面的代码。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">extension</span> <span class="title">UnladenSwallow</span> </span>&#123;</div><div class="line">  <span class="keyword">var</span> canFly: <span class="type">Bool</span> &#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span> != .unknown</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在只有<code>.african</code>和<code>.european</code>会给<code>canFly</code>返回<code>true</code>。添加下面的代码来测试：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="type">UnladenSwallow</span>.unknown.canFly  <span class="comment">// false</span></div><div class="line"><span class="type">UnladenSwallow</span>.african.canFly  <span class="comment">// true</span></div><div class="line"><span class="type">Penguin</span>(name: <span class="string">"King Penguin"</span>).canFly  <span class="comment">// false</span></div></pre></td></tr></table></figure>
+<p>这样就能覆盖协议中的属性和方法了，这和面向对象的编程中覆盖虚方法差不多。</p>
+<h2 id="扩展协议"><a href="#扩展协议" class="headerlink" title="扩展协议"></a>扩展协议</h2><p>你可以使用标准库中的协议，并且定义一些默认行为。</p>
+<p>修改<code>Bird</code>协议的声明来让它遵从<code>CustomStringConvertible</code>协议：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">protocol</span> <span class="title">Bird</span>: <span class="title">CustomStringConvertible</span> </span>&#123;</div></pre></td></tr></table></figure>
+<p>遵从<code>CustomStringConvertible</code>意味着你的类型需要有一个<code>description</code>属性。这是否意味着每一个<code>Bird</code>类型都需要添加这个属性呢？是的，当然用协议扩展会简单许多。在Bird定义后面添加如下代码：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">extension</span> <span class="title">CustomStringConvertible</span> <span class="title">where</span> <span class="title">Self</span>: <span class="title">Bird</span> </span>&#123;</div><div class="line">  <span class="keyword">var</span> description: <span class="type">String</span> &#123;</div><div class="line">    <span class="keyword">return</span> canFly ? <span class="string">"I can fly"</span> : <span class="string">"Guess I’ll just sit here :["</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里使用<code>canFly</code>属性来表示<code>Bird</code>类型的<code>description</code>的值。</p>
+<p>添加下面的代码来测试：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="type">UnladenSwallow</span>.african</div></pre></td></tr></table></figure>
+<p>你应该能在右边栏看到<code>I can fly！</code></p>
+<h2 id="对Swift标准库的影响"><a href="#对Swift标准库的影响" class="headerlink" title="对Swift标准库的影响"></a>对Swift标准库的影响</h2><p>你已经看到了协议扩展的自定义和扩展能力非常好。而Swift小组是如何利用协议来改进Swift标准库的编写，估计也会让你吃惊。</p>
+<p>添加下面的代码：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">let</span> numbers = [<span class="number">10</span>,<span class="number">20</span>,<span class="number">30</span>,<span class="number">40</span>,<span class="number">50</span>,<span class="number">60</span>]</div><div class="line"><span class="keyword">let</span> slice = numbers[<span class="number">1</span>...<span class="number">3</span>]</div><div class="line"><span class="keyword">let</span> reversedSlice = slice.reversed()</div><div class="line"> </div><div class="line"><span class="keyword">let</span> answer = reversedSlice.<span class="built_in">map</span> &#123; $<span class="number">0</span> * <span class="number">10</span> &#125;</div><div class="line"><span class="built_in">print</span>(answer)</div></pre></td></tr></table></figure>
+<p>代码很直观，你应该可以猜到answer打印出来是什么。比较有意思的是其中涉及的类型，比如<code>slice</code>不是一个整型数组，而是一个<code>ArraySlice&lt;Int&gt;</code> 。这个<strong>包装类型</strong>是原始数组的一个视图，避免了内存分配急速增长。类似的，<code>reversedSlice</code>实际是一个<code>ReversedRandomAccessCollection&lt;ArraySlice&lt;Int&gt;&gt;</code>，这个包装类型也是原始数组的一个视图。</p>
+<p><img src="https://koenig-media.raywenderlich.com/uploads/2016/11/secrets.png" alt=""></p>
+<p>幸运的是，标准库的开发人员把<code>map</code>方法定义成了<code>Sequence</code>协议的扩展，所有的集合封装（有很多）都遵从这个协议。这样不管它是<code>Array</code>还是<code>ReversedRandomAccessCollection</code>，你都可以调用map方法了。你下面就会用到这种重要的设计模式。</p>
+<h2 id="去比赛"><a href="#去比赛" class="headerlink" title="去比赛"></a>去比赛</h2><p>目前你已经定义了一些遵从<code>Bird</code>的类型。现在添加一些不同的东西：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Motorcycle</span> </span>&#123;</div><div class="line">  <span class="keyword">init</span>(name: <span class="type">String</span>) &#123;</div><div class="line">    <span class="keyword">self</span>.name = name</div><div class="line">    speed = <span class="number">200</span></div><div class="line">  &#125;</div><div class="line">  <span class="keyword">var</span> name: <span class="type">String</span></div><div class="line">  <span class="keyword">var</span> speed: <span class="type">Double</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个类和之前定义的bird等没有关系。但是你想摩托车和企鹅一起赛车。现在把所有的代码合并到一起。</p>
+<h3 id="合到一起"><a href="#合到一起" class="headerlink" title="合到一起"></a>合到一起</h3><p>现在要用一个通用的赛车协议把不同的类型统一起来。你不需要回去修改之前的模型定义。这用术语来说就是<strong>retroactive modeling</strong> 。添加下面的代码：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">protocol</span> <span class="title">Racer</span> </span>&#123;</div><div class="line">  <span class="keyword">var</span> speed: <span class="type">Double</span> &#123; <span class="keyword">get</span> &#125;  <span class="comment">// speed is the only thing racers care about</span></div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">extension</span> <span class="title">FlappyBird</span>: <span class="title">Racer</span> </span>&#123;</div><div class="line">  <span class="keyword">var</span> speed: <span class="type">Double</span> &#123;</div><div class="line">    <span class="keyword">return</span> airspeedVelocity</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">extension</span> <span class="title">SwiftBird</span>: <span class="title">Racer</span> </span>&#123;</div><div class="line">  <span class="keyword">var</span> speed: <span class="type">Double</span> &#123;</div><div class="line">    <span class="keyword">return</span> airspeedVelocity</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">extension</span> <span class="title">Penguin</span>: <span class="title">Racer</span> </span>&#123;</div><div class="line">  <span class="keyword">var</span> speed: <span class="type">Double</span> &#123;</div><div class="line">    <span class="keyword">return</span> <span class="number">42</span>  <span class="comment">// full waddle speed</span></div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">extension</span> <span class="title">UnladenSwallow</span>: <span class="title">Racer</span> </span>&#123;</div><div class="line">  <span class="keyword">var</span> speed: <span class="type">Double</span> &#123;</div><div class="line">    <span class="keyword">return</span> canFly ? airspeedVelocity : <span class="number">0</span></div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">extension</span> <span class="title">Motorcycle</span>: <span class="title">Racer</span> </span>&#123;&#125;</div><div class="line"> </div><div class="line"><span class="keyword">let</span> racers: [<span class="type">Racer</span>] =</div><div class="line">  [<span class="type">UnladenSwallow</span>.african,</div><div class="line">   <span class="type">UnladenSwallow</span>.european,</div><div class="line">   <span class="type">UnladenSwallow</span>.unknown,</div><div class="line">   <span class="type">Penguin</span>(name: <span class="string">"King Penguin"</span>),</div><div class="line">   <span class="type">SwiftBird</span>(version: <span class="number">3.0</span>),</div><div class="line">   <span class="type">FlappyBird</span>(name: <span class="string">"Felipe"</span>, flappyAmplitude: <span class="number">3.0</span>, flappyFrequency: <span class="number">20.0</span>),</div><div class="line">   <span class="type">Motorcycle</span>(name: <span class="string">"Giacomo"</span>)</div><div class="line">  ]</div></pre></td></tr></table></figure>
+<p>代码中首先定义了一个协议<code>Racer</code>，然后让所有类型遵从。有些类型，比如<code>MotorCycle</code>只需要声明就能遵从。而其他的类型比如<code>UnladenSwallow</code>就需要添加一些逻辑。</p>
+<p>现在所有的类型都遵从Racer了，你就能创建一个Racer的数组。</p>
+<h3 id="最高时速"><a href="#最高时速" class="headerlink" title="最高时速"></a>最高时速</h3><p>现在需要写一个方法来确定赛车的最高时速。添加下面的代码：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">topSpeed</span><span class="params">(of racers: [Racer])</span></span> -&gt; <span class="type">Double</span> &#123;</div><div class="line">  <span class="keyword">return</span> racers.<span class="built_in">max</span>(by: &#123; $<span class="number">0</span>.speed &lt; $<span class="number">1</span>.speed &#125;)?.speed ?? <span class="number">0</span></div><div class="line">&#125;</div><div class="line"> </div><div class="line">topSpeed(of: racers) <span class="comment">// 3000</span></div></pre></td></tr></table></figure>
+<p>这个方法使用标准库的<code>max</code>方法来找到并返回 rancer中最高时速。如果你传入一个空的<code>racers</code>数组，方法会返回0.</p>
+<h3 id="更加通用"><a href="#更加通用" class="headerlink" title="更加通用"></a>更加通用</h3><p>现在还有一个问题。假设你想找到<code>racers</code>的子集的最高时速。使用下面的代码就会报错：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">topSpeed(of: racers[<span class="number">1</span>...<span class="number">3</span>]) <span class="comment">// ERROR</span></div></pre></td></tr></table></figure>
+<p>Swift提示【不能对[Racer]类型 用 CountableClosedRange 作为索引来取下标】。Array Slice会返回CountableClosedRange这个包装类型。</p>
+<p>解决方法是，使用通用协议而不是固定的数组。添加下面的代码：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">topSpeed</span>&lt;RacerType: Sequence&gt;<span class="params">(of racers: RacerType)</span></span> -&gt; <span class="type">Double</span></div><div class="line">    <span class="keyword">where</span> <span class="type">RacerType</span>.<span class="type">Iterator</span>.<span class="type">Element</span> == <span class="type">Racer</span> &#123;</div><div class="line">  <span class="keyword">return</span> racers.<span class="built_in">max</span>(by: &#123; $<span class="number">0</span>.speed &lt; $<span class="number">1</span>.speed &#125;)?.speed ?? <span class="number">0</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个可能看起来有点吓人，让我们分解一下。<code>RacerType</code>是这个方法用到的泛型，它可以是遵从Swift标准库中<code>Sequence</code>协议的任何类型。<code>where</code>语句指定 sequence中的元素类型必须遵从<code>Racer</code>协议。所有<code>Sequence</code>类型都有一个叫<code>Iterator</code>的关联类型，可以用它来循环<code>Element</code>类型。实际的方法体和之前基本一样。</p>
+<p>这个方法可以用包括array slice在内的所有<code>Sequence</code>。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">topSpeed(of: racers[<span class="number">1</span>...<span class="number">3</span>]) <span class="comment">// 42</span></div></pre></td></tr></table></figure>
+<h3 id="更加Swift"><a href="#更加Swift" class="headerlink" title="更加Swift"></a>更加Swift</h3><p>你还能再改进一下。参考标准库，你可以扩展<code>Sequence</code>协议来让<code>topSpeed()</code>可以被发现。添加下面的代码：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">extension</span> <span class="title">Sequence</span> <span class="title">where</span> <span class="title">Iterator</span>.<span class="title">Element</span> == <span class="title">Racer</span> </span>&#123;</div><div class="line">  <span class="function"><span class="keyword">func</span> <span class="title">topSpeed</span><span class="params">()</span></span> -&gt; <span class="type">Double</span> &#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">self</span>.<span class="built_in">max</span>(by: &#123; $<span class="number">0</span>.speed &lt; $<span class="number">1</span>.speed &#125;)?.speed ?? <span class="number">0</span></div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"> </div><div class="line">racers.topSpeed()        <span class="comment">// 3000</span></div><div class="line">racers[<span class="number">1</span>...<span class="number">3</span>].topSpeed() <span class="comment">// 42</span></div></pre></td></tr></table></figure>
+<p>现在这个方法更容易被发现了，而且只会应用到racer的Sequence上。</p>
+<h2 id="操作符"><a href="#操作符" class="headerlink" title="操作符"></a>操作符</h2><p>Swift3 对协议的一个改进就是 创建操作符。</p>
+<p>添加下面的代码：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">protocol</span> <span class="title">Score</span> </span>&#123;</div><div class="line">  <span class="keyword">var</span> value: <span class="type">Int</span> &#123; <span class="keyword">get</span> &#125;</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">struct</span> <span class="title">RacingScore</span>: <span class="title">Score</span> </span>&#123;</div><div class="line">  <span class="keyword">let</span> value: <span class="type">Int</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>写一个<code>Score</code>协议意味着你可以用相同的方式来处理所有得分。添加像<code>RacingScore</code>等不同的得分类型，能让你确保不会把赛车得分和其他风格得分或者技巧得分弄混。</p>
+<p>我们希望得分是可以比较的，这样就能判断谁的分高。在Swift 3之前，你需要添加全局操作符函数。现在你可以在model内定义这些静态方法。用下面的代码替换<code>Score</code>和<code>RacingScore</code>的定义：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">protocol</span> <span class="title">Score</span>: <span class="title">Equatable</span>, <span class="title">Comparable</span> </span>&#123;</div><div class="line">  <span class="keyword">var</span> value: <span class="type">Int</span> &#123; <span class="keyword">get</span> &#125;</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="class"><span class="keyword">struct</span> <span class="title">RacingScore</span>: <span class="title">Score</span> </span>&#123;</div><div class="line">  <span class="keyword">let</span> value: <span class="type">Int</span></div><div class="line"> </div><div class="line">  <span class="keyword">static</span> <span class="function"><span class="keyword">func</span> ==<span class="params">(lhs: RacingScore, rhs: RacingScore)</span></span> -&gt; <span class="type">Bool</span> &#123;</div><div class="line">    <span class="keyword">return</span> lhs.value == rhs.value</div><div class="line">  &#125;</div><div class="line"> </div><div class="line">  <span class="keyword">static</span> <span class="function"><span class="keyword">func</span> &lt;(lhs: RacingScore, rhs: RacingScore) -&gt; <span class="title">Bool</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> lhs.value &lt; rhs.value</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这样就把<code>RacingScore</code>的全部逻辑都封装在一起了。现在你可以比较得分了，得益于协议扩展的默认实现，现在也可以用 <code>&gt;=</code> 这样没有显式定义过的操作符。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="type">RacingScore</span>(value: <span class="number">150</span>) &gt;= <span class="type">RacingScore</span>(value: <span class="number">130</span>)  <span class="comment">// true</span></div></pre></td></tr></table></figure>
+<h2 id="接下来"><a href="#接下来" class="headerlink" title="接下来"></a>接下来</h2><p>你可以在这<a href="https://koenig-media.raywenderlich.com/uploads/2016/11/SwiftProtocols.playground-1.zip" target="_blank" rel="external">下载</a>本教程完整的playground。</p>
+<p>通过创建简单的协议和扩展协议，你已经看到面向协议的编程的强大之处了。通过默认实现，你可以设置已有协议的行为，这和基类很像，但是你还能在struct和enum上使用。</p>
+<p>另外，我们不仅能扩展自己写的协议，还能给Swift标准库、Cocoa、Cocoa Touch或者任何第三方库提供扩展和默认实现。</p>
+<p>继续学习协议，可以阅读<a href="https://developer.apple.com/library/content/documentation/Swift/Conceptual/Swift_Programming_Language/Protocols.html" target="_blank" rel="external">Apple官方文档</a>。</p>
+<p>你可以在Apple开发者网站上观看WWDC视频 <a href="https://developer.apple.com/videos/wwdc/2015/?id=408" target="_blank" rel="external">面向协议的编程</a>，来深入了解协议。</p>
+<p>关于operator conformance ，参看 <a href="https://github.com/apple/swift-evolution/blob/master/proposals/0091-improving-operators-in-protocols.md" target="_blank" rel="external">Swift evolution proposal</a>。你可能还想了解Swift集合协议及<a href="https://www.raywenderlich.com/139591/building-custom-collection-swift" target="_blank" rel="external">如何自己构建一个集合</a>。</p>
+<p>最后，对于一个新的编程范式，很容易过度热情，然后把它用到所有的东西上。<a href="http://chris.eidhof.nl/post/protocol-oriented-programming/" target="_blank" rel="external">Chris Eidhof发布的这篇博客</a>提醒我们协议也不是万能的，不应该到处都用。</p>
+
+  </div>
+</article>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#开始"><span class="toc-number">1.</span> <span class="toc-text">开始</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#定义遵从协议的类型"><span class="toc-number">2.</span> <span class="toc-text">定义遵从协议的类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用默认实现来扩展协议"><span class="toc-number">3.</span> <span class="toc-text">使用默认实现来扩展协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#为什么不用基类？"><span class="toc-number">4.</span> <span class="toc-text">为什么不用基类？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#覆盖默认行为"><span class="toc-number">5.</span> <span class="toc-text">覆盖默认行为</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#扩展协议"><span class="toc-number">6.</span> <span class="toc-text">扩展协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#对Swift标准库的影响"><span class="toc-number">7.</span> <span class="toc-text">对Swift标准库的影响</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#去比赛"><span class="toc-number">8.</span> <span class="toc-text">去比赛</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#合到一起"><span class="toc-number">8.1.</span> <span class="toc-text">合到一起</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#最高时速"><span class="toc-number">8.2.</span> <span class="toc-text">最高时速</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#更加通用"><span class="toc-number">8.3.</span> <span class="toc-text">更加通用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#更加Swift"><span class="toc-number">8.4.</span> <span class="toc-text">更加Swift</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#操作符"><span class="toc-number">9.</span> <span class="toc-text">操作符</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#接下来"><span class="toc-number">10.</span> <span class="toc-text">接下来</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&text=面向协议的编程简介（Swift3）"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&title=面向协议的编程简介（Swift3）"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&is_video=false&description=面向协议的编程简介（Swift3）"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=面向协议的编程简介（Swift3）&body=Check out this article: http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&title=面向协议的编程简介（Swift3）"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&title=面向协议的编程简介（Swift3）"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&title=面向协议的编程简介（Swift3）"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&title=面向协议的编程简介（Swift3）"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://yoursite.com/2017/01/19/面向协议的编程简介（Swift3）/&name=面向协议的编程简介（Swift3）&description="><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2017 BenBeng
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    <script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+<!-- Disqus Comments -->
+
+
+</body>
+</html>
