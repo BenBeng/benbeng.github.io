@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="本文翻译自Jesse Squires的 Refactoring singleton usage in Swift
+
+在软件开发中，通常都不鼓励、也不赞成使用单例。单例很难或者几乎不能测试，当在其他类中隐式使用时，它会让你的代码很难重用。大多数情况下，单例都只是一个全局可变的状态。每个人都应当知道这非常不好。但有时单例是无法避免且必需的。那么我们怎么样使用单例才能是整洁、模块化和可测试的呢？
+单例">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在Swift中重构单例">
+<meta property="og:url" content="http://yoursite.com/2017/02/21/在Swift中重构单例/index.html">
+<meta property="og:site_name" content="BenBeng">
+<meta property="og:description" content="本文翻译自Jesse Squires的 Refactoring singleton usage in Swift
+
+在软件开发中，通常都不鼓励、也不赞成使用单例。单例很难或者几乎不能测试，当在其他类中隐式使用时，它会让你的代码很难重用。大多数情况下，单例都只是一个全局可变的状态。每个人都应当知道这非常不好。但有时单例是无法避免且必需的。那么我们怎么样使用单例才能是整洁、模块化和可测试的呢？
+单例">
+<meta property="og:updated_time" content="2017-02-21T09:49:45.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="在Swift中重构单例">
+<meta name="twitter:description" content="本文翻译自Jesse Squires的 Refactoring singleton usage in Swift
+
+在软件开发中，通常都不鼓励、也不赞成使用单例。单例很难或者几乎不能测试，当在其他类中隐式使用时，它会让你的代码很难重用。大多数情况下，单例都只是一个全局可变的状态。每个人都应当知道这非常不好。但有时单例是无法避免且必需的。那么我们怎么样使用单例才能是整洁、模块化和可测试的呢？
+单例">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>在Swift中重构单例</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+    <link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+    <!-- jquery -->
+    <script src="/lib/jquery/jquery.min.js"></script>
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" href="/2017/01/19/面向协议的编程简介（Swift3）/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://yoursite.com/2017/02/21/在Swift中重构单例/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&text=在Swift中重构单例"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&title=在Swift中重构单例"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&is_video=false&description=在Swift中重构单例"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=在Swift中重构单例&body=Check out this article: http://yoursite.com/2017/02/21/在Swift中重构单例/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&title=在Swift中重构单例"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&title=在Swift中重构单例"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&title=在Swift中重构单例"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&title=在Swift中重构单例"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&name=在Swift中重构单例&description="><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#单例无处不在"><span class="toc-number">1.</span> <span class="toc-text">单例无处不在</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#依赖注入（Dependency-injection）"><span class="toc-number">2.</span> <span class="toc-text">依赖注入（Dependency injection）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重构？"><span class="toc-number">3.</span> <span class="toc-text">重构？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#默认参数值"><span class="toc-number">4.</span> <span class="toc-text">默认参数值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结论"><span class="toc-number">5.</span> <span class="toc-text">结论</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index width mx-auto px2 my4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        在Swift中重构单例
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">BenBeng</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2017-02-21T03:42:06.000Z" itemprop="datePublished">2017-02-21</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <blockquote>
+<p>本文翻译自Jesse Squires的 <a href="http://www.jessesquires.com/refactoring-singletons-in-swift" target="_blank" rel="external">Refactoring singleton usage in Swift</a></p>
+</blockquote>
+<p>在软件开发中，通常都<a href="https://www.objc.io/issues/13-architecture/singletons/" target="_blank" rel="external">不鼓励</a>、也<a href="http://coliveira.net/software/day-19-avoid-singletons/" target="_blank" rel="external">不赞成</a>使用<a href="https://en.wikipedia.org/wiki/Singleton_pattern" target="_blank" rel="external">单例</a>。单例很难或者几乎不能测试，当在其他类中隐式使用时，它会让你的代码很难重用。大多数情况下，单例都只是一个全局可变的状态。每个人都应当知道这非常不好。但有时单例是无法避免且必需的。那么我们怎么样使用单例才能是整洁、模块化和可测试的呢？</p>
+<h2 id="单例无处不在"><a href="#单例无处不在" class="headerlink" title="单例无处不在"></a>单例无处不在</h2><p>在Apple平台，Cocoa和Cocoa Touch框架中有很多单例，比如<code>UIApplication.shared</code>, <code>FileManager.default</code>,<code>NotificationCenter.default</code>,<code>UserDefaults.standard</code>,<code>URLSession.shared</code>等。这种设计模式甚至在<a href="https://developer.apple.com/library/content/documentation/General/Conceptual/DevPedia-CocoaCore/Singleton.html#//apple_ref/doc/uid/TP40008195-CH49-SW1" target="_blank" rel="external">Cocoa Core Competencies</a>指南中都有单独一章。</p>
+<p>当你隐式引用这些（和你自己的）单例时，修改代码会更不容易，而且测试也比较困难，因为没有办法在使用单例的类的外部去修改或者mock单例。一般都能在iOS应用中看到下面的代码：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyViewController</span>: <span class="title">UIViewController</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">viewDidLoad</span><span class="params">()</span></span> &#123;</div><div class="line">        <span class="keyword">super</span>.viewDidLoad()</div><div class="line"></div><div class="line">        <span class="keyword">let</span> currentUser = <span class="type">CurrentUserManager</span>.shared.user</div><div class="line">        <span class="keyword">if</span> currentUser != <span class="literal">nil</span> &#123;</div><div class="line">            <span class="comment">// do something with current user</span></div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">let</span> mySetting = <span class="type">UserDefaults</span>.standard.bool(forKey: <span class="string">"mySetting"</span>)</div><div class="line">        <span class="keyword">if</span> mySetting &#123;</div><div class="line">            <span class="comment">// do something with setting</span></div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="type">URLSession</span>.shared.dataTask(with: <span class="type">URL</span>(string: <span class="string">"http://someResource"</span>)!) &#123; (data, response, error) <span class="keyword">in</span></div><div class="line">            <span class="comment">// handle response</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这就是我说的隐式引用，直接在类中使用单例。我们可以做得更好。在Swift中有一个轻量、简单、更少影响的方式。</p>
+<h2 id="依赖注入（Dependency-injection）"><a href="#依赖注入（Dependency-injection）" class="headerlink" title="依赖注入（Dependency injection）"></a>依赖注入（Dependency injection）</h2><p>简单来说，答案就是<a href="https://en.wikipedia.org/wiki/Dependency_injection" target="_blank" rel="external">依赖注入</a>。这个原则中说的是，你应该把类和函数设计成所有输入都是显式的。如果用依赖注入重构上面的代码，就应该是下面这样的：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyViewController</span>: <span class="title">UIViewController</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">let</span> userManager: <span class="type">CurrentUserManager</span></div><div class="line">    <span class="keyword">let</span> defaults: <span class="type">UserDefaults</span></div><div class="line">    <span class="keyword">let</span> urlSession: <span class="type">URLSession</span></div><div class="line"></div><div class="line">    <span class="keyword">init</span>(userManager: <span class="type">CurrentUserManager</span>, defaults: <span class="type">UserDefaults</span>, urlSession: <span class="type">URLSession</span>) &#123;</div><div class="line">        <span class="keyword">self</span>.userManager = userManager</div><div class="line">        <span class="keyword">self</span>.defaults = defaults</div><div class="line">        <span class="keyword">self</span>.urlSession = urlSession</div><div class="line">        <span class="keyword">super</span>.<span class="keyword">init</span>(nibName: <span class="literal">nil</span>, bundle: <span class="literal">nil</span>)</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">viewDidLoad</span><span class="params">()</span></span> &#123;</div><div class="line">        <span class="keyword">super</span>.viewDidLoad()</div><div class="line"></div><div class="line">        <span class="keyword">let</span> currentUser = userManager.user</div><div class="line">        <span class="keyword">if</span> currentUser != <span class="literal">nil</span> &#123;</div><div class="line">            <span class="comment">// do something with current user</span></div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">let</span> mySetting = defaults.bool(forKey: <span class="string">"mySetting"</span>)</div><div class="line">        <span class="keyword">if</span> mySetting &#123;</div><div class="line">            <span class="comment">// do something with setting</span></div><div class="line">        &#125;</div><div class="line"></div><div class="line">        urlSession.dataTask(with: <span class="type">URL</span>(string: <span class="string">"http://someResource"</span>)!) &#123; (data, response, error) <span class="keyword">in</span></div><div class="line">            <span class="comment">// handle response</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个类现在就不再隐式（或者显式）依赖任何单例了。它显式依赖一个<code>CurrentUserManager</code>, <code>UserDefaults</code>和<code>URLSession</code>，但是这些依赖都没有表明它们是单例。这个细节已经不再重要，但是功能并没有发生改变。view controller只知道这些对象的实例存在。你可以在调用的时候传入单例。这些细节从类的角度来看也是不相关的。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">let</span> controller = <span class="type">MyViewController</span>(userManager: .shared, defaults: .standard, urlSession: .shared)</div><div class="line"></div><div class="line">present(controller, animated: <span class="literal">true</span>, completion: <span class="literal">nil</span>)</div></pre></td></tr></table></figure>
+<p>提示：Swift的类型推断在这起作用。所以你可以直接写<code>.shared</code>而不是<code>URLSession.shared</code>。</p>
+<p>如果你想提供另外一个<code>userDefaults</code>，比如你想<a href="https://developer.apple.com/library/content/documentation/General/Conceptual/ExtensibilityPG/ExtensionScenarios.html#//apple_ref/doc/uid/TP40014214-CH21-SW6" target="_blank" rel="external">在App Groups之间共享数据</a>，那这个就很好修改。实际上，你不需要修改<code>MyViewController</code>中的任何代码，只要把传入的<code>UserDefaults.standard</code>改成<code>UserDefaults(suiteName: &quot;com.myApp&quot;)</code>即可。</p>
+<p>而且现在在单元测试中可以传入假的或者mock的数据。在Swift中并不能真的mock，但还是有<a href="http://www.jessesquires.com/testing-without-ocmock/" target="_blank" rel="external">解决方法</a>。这依赖于你想如何组织代码。你可以给<code>CurrentUserManager</code>用一个协议，然后在测试中mock。你可以提供一个假的<code>UserDefaults</code>suite来测试。你可以将<code>URLSession</code>改成可选的，然后传入<code>nil</code>来测试。</p>
+<h2 id="重构？"><a href="#重构？" class="headerlink" title="重构？"></a>重构？</h2><p>现在你赞成这个观点，想要开始重构代码。依赖注入很棒，而且能让model更干净，但是它很难实现。而且最开始写的代码基本也不是这么设计的。</p>
+<p>我们上面重构的代码现在更模块化和可测试，但仍然有一个问题。<code>MyViewController</code>的构造器原先是空的（<code>init()</code>）,但是现在需要三个参数。每个调用的地方都需要修改。合适的调用方式应该是从上层或者之前的view controller传入。这需要层层传递数据。特别是在iOS中，这会造成从一个view controller给另一个view controller传数据。老的代码在实现的时候就需要修改很多。</p>
+<p>大部分类（特别是view controller）的构造器都需要修改。这么大的改动会导致你几乎需要重构你整个应用。不管是把所有的都改了，还是只把某些类改成依赖注入，这种不统一在以后都可能造成问题。</p>
+<p>所以，这样的重构可能不适用与复杂庞大老旧的代码，至少不是一次改完，而且没有回归。因此，你可以说那还是别重构了，保持现状。然后在几个月几年之后，你需要支持多个用户，当你实现切换账户时，<code>CurrentUserManager</code>就不好使了。你怎么来处理这个呢？</p>
+<p>还是有一种方式让你从一开始就把类设计成支持这样改动的。</p>
+<h2 id="默认参数值"><a href="#默认参数值" class="headerlink" title="默认参数值"></a>默认参数值</h2><p>我最喜欢的Swift的一个功能就是默认参数值。非常方便而且能让代码更灵活。有了默认参数，你就能处理上面提到的问题，而不用陷入依赖注入的深坑，也不睡增加代码复杂度。也许你的应用真的就只会有一个用户，所以实现这个依赖注入也不是必需的。</p>
+<p>你可以把单例作为默认参数：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyViewController</span>: <span class="title">UIViewController</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">init</span>(userManager: <span class="type">CurrentUserManager</span> = .shared, defaults: <span class="type">UserDefaults</span> = .standard, urlSession: <span class="type">URLSession</span> = .shared) &#123;</div><div class="line">        <span class="keyword">self</span>.userManager = userManager</div><div class="line">        <span class="keyword">self</span>.defaults = defaults</div><div class="line">        <span class="keyword">self</span>.urlSession = urlSession</div><div class="line">        <span class="keyword">super</span>.<span class="keyword">init</span>(nibName: <span class="literal">nil</span>, bundle: <span class="literal">nil</span>)</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在从调用方来看构造器就没有发生改变了。但是类的内部已经使用依赖注入，并且不再引用单例了。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">let</span> controller = <span class="type">MyViewController</span>()</div><div class="line"></div><div class="line">present(controller, animated: <span class="literal">true</span>, completion: <span class="literal">nil</span>)</div></pre></td></tr></table></figure>
+<p>从这个改变中你得到了什么呢？你可以用这种方式来重构所有类而不用更新调用的地方。语义和功能上都没有发生改变，但是你的类已经使用依赖注入了。现在它们只在内部使用实例。你可以用上面提到的方式进行测试，并且保持灵活、模块化的API，所有的公共接口都保持不变。</p>
+<p>如果需要传入自定义的非单例参数，你也不需要修改任何类，你只需要更新调用的地方。如果你决定实现完整的依赖注入，从上层传入每个依赖，只需要删除默认参数，传入依赖的实例。</p>
+<p>如果参数有默认值，你可以选择传或者不传值。在下面的例子中，我们提供了自定义的<code>UserDefaults</code>但是保留<code>CurrentUserManager</code>和 <code>URLSession</code>的默认参数。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">let</span> appGroupDefaults = <span class="type">UserDefaults</span>(suiteName: <span class="string">"com.myApp"</span>)!</div><div class="line"></div><div class="line"><span class="keyword">let</span> controller = <span class="type">MyViewController</span>(defaults: appGroupDefaults)</div><div class="line"></div><div class="line">present(controller, animated: <span class="literal">true</span>, completion: <span class="literal">nil</span>)</div></pre></td></tr></table></figure>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>Swift让这种“部分”依赖注入非常简单。给类添加一个新属性和带默认参数的构造器，就能让你的代码更加模块化和可测试，而这不需要完全重构，也不需要使用完整的依赖注入。如果一开始就能这样设计类，后面就不会经常陷入坑里了。</p>
+<p>你可以把这个概念和设计应用到代码的其他地方，类、结构体、枚举、函数等。Swift中的函数都可以有默认参数值。花些时间来提前思考未来可能有哪些变化，然后创建适应这些变化的类型和函数。</p>
+<p>构建和设计出色的软件意味着编写易于变化但是不易于出错的代码。这就是依赖注入背后的动机。Swift的默认参数能帮助你快速、简单、优雅的实现它。</p>
+
+  </div>
+</article>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#单例无处不在"><span class="toc-number">1.</span> <span class="toc-text">单例无处不在</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#依赖注入（Dependency-injection）"><span class="toc-number">2.</span> <span class="toc-text">依赖注入（Dependency injection）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重构？"><span class="toc-number">3.</span> <span class="toc-text">重构？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#默认参数值"><span class="toc-number">4.</span> <span class="toc-text">默认参数值</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结论"><span class="toc-number">5.</span> <span class="toc-text">结论</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://yoursite.com/2017/02/21/在Swift中重构单例/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&text=在Swift中重构单例"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&title=在Swift中重构单例"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&is_video=false&description=在Swift中重构单例"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=在Swift中重构单例&body=Check out this article: http://yoursite.com/2017/02/21/在Swift中重构单例/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&title=在Swift中重构单例"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&title=在Swift中重构单例"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&title=在Swift中重构单例"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&title=在Swift中重构单例"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://yoursite.com/2017/02/21/在Swift中重构单例/&name=在Swift中重构单例&description="><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2017 BenBeng
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    <script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+<!-- Disqus Comments -->
+
+
+</body>
+</html>
