@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="本文翻译自Ilya Puchka的 Custom UITextView in Swift
+
+在本篇文章中，我将会描述我是如何用TextKit、Playgrounds、IBDesignable 和 IBInspectable 来开发自定义UITextView的。你可以在Github下载源代码。
+在这里，我们会给text view添加一个“read more的功能。Text view会有2种模式，展">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在Swift中自定义UITextView">
+<meta property="og:url" content="http://yoursite.com/2017/03/03/在Swift中自定义UITextView/index.html">
+<meta property="og:site_name" content="BenBeng">
+<meta property="og:description" content="本文翻译自Ilya Puchka的 Custom UITextView in Swift
+
+在本篇文章中，我将会描述我是如何用TextKit、Playgrounds、IBDesignable 和 IBInspectable 来开发自定义UITextView的。你可以在Github下载源代码。
+在这里，我们会给text view添加一个“read more的功能。Text view会有2种模式，展">
+<meta property="og:image" content="http://ilya.puchka.me/content/images/2015/Apr/checkmark.png">
+<meta property="og:image" content="http://ilya.puchka.me/content/images/2015/Apr/Assistant-Editor.png">
+<meta property="og:image" content="http://ilya.puchka.me/content/images/2015/Apr/UITextView-bug.png">
+<meta property="og:image" content="http://ilya.puchka.me/content/images/2015/Apr/TextView.png">
+<meta property="og:updated_time" content="2017-03-06T09:46:06.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="在Swift中自定义UITextView">
+<meta name="twitter:description" content="本文翻译自Ilya Puchka的 Custom UITextView in Swift
+
+在本篇文章中，我将会描述我是如何用TextKit、Playgrounds、IBDesignable 和 IBInspectable 来开发自定义UITextView的。你可以在Github下载源代码。
+在这里，我们会给text view添加一个“read more的功能。Text view会有2种模式，展">
+<meta name="twitter:image" content="http://ilya.puchka.me/content/images/2015/Apr/checkmark.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="/images/favicon.ico">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+          
+        
+    
+    <!-- title -->
+    <title>在Swift中自定义UITextView</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/meslo-LG/styles.css">
+    <link rel="stylesheet" href="/lib/justified-gallery/justifiedGallery.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- rss -->
+    
+    
+    <!-- jquery -->
+    <script src="/lib/jquery/jquery.min.js"></script>
+</head>
+
+<body>
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fa fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" href="/2017/02/21/在Swift中重构单例/"><i class="fa fa-chevron-right" aria-hidden="true" onmouseover='$("#i-next").toggle();' onmouseout='$("#i-next").toggle();'></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up" aria-hidden="true" onmouseover='$("#i-top").toggle();' onmouseout='$("#i-top").toggle();'></i></a></li>
+        <li><a class="icon" href="#"><i class="fa fa-share-alt" aria-hidden="true" onmouseover='$("#i-share").toggle();' onmouseout='$("#i-share").toggle();' onclick='$("#share").toggle();return false;'></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/"><i class="fa fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&text=在Swift中自定义UITextView"><i class="fa fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&title=在Swift中自定义UITextView"><i class="fa fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&is_video=false&description=在Swift中自定义UITextView"><i class="fa fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=在Swift中自定义UITextView&body=Check out this article: http://yoursite.com/2017/03/03/在Swift中自定义UITextView/"><i class="fa fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&title=在Swift中自定义UITextView"><i class="fa fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&title=在Swift中自定义UITextView"><i class="fa fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&title=在Swift中自定义UITextView"><i class="fa fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&title=在Swift中自定义UITextView"><i class="fa fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&name=在Swift中自定义UITextView&description="><i class="fa fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#创建playground"><span class="toc-number">1.</span> <span class="toc-text">创建playground</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建主view"><span class="toc-number">2.</span> <span class="toc-text">创建主view</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#控件的接口"><span class="toc-number">3.</span> <span class="toc-text">控件的接口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#将控件添加到主view"><span class="toc-number">4.</span> <span class="toc-text">将控件添加到主view</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#裁剪文字"><span class="toc-number">5.</span> <span class="toc-text">裁剪文字</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#自动布局"><span class="toc-number">6.</span> <span class="toc-text">自动布局</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#初始化"><span class="toc-number">7.</span> <span class="toc-text">初始化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#处理点击"><span class="toc-number">8.</span> <span class="toc-text">处理点击</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Interface-Builder"><span class="toc-number">9.</span> <span class="toc-text">Interface Builder</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结论"><span class="toc-number">10.</span> <span class="toc-text">结论</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index width mx-auto px2 my4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        在Swift中自定义UITextView
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">BenBeng</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2017-03-03T03:39:44.000Z" itemprop="datePublished">2017-03-03</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <blockquote>
+<p>本文翻译自Ilya Puchka的 <a href="http://ilya.puchka.me/custom-uitextview-in-swift/" target="_blank" rel="external">Custom UITextView in Swift</a></p>
+</blockquote>
+<p>在本篇文章中，我将会描述我是如何用TextKit、Playgrounds、IBDesignable 和 IBInspectable 来开发自定义UITextView的。你可以在<a href="https://github.com/ilyapuchka/ReadMoreTextView" target="_blank" rel="external">Github</a>下载源代码。</p>
+<p>在这里，我们会给text view添加一个“read more的功能。Text view会有2种模式，展开和收起。展开模式就和一般的UITextView一样。收起模式只会显示最大限制的文字行数，并在末尾有一个文字按钮（比如“Read more”）。当用户点击“Read more”时，text view会变成展开模式。</p>
+<h2 id="创建playground"><a href="#创建playground" class="headerlink" title="创建playground"></a>创建playground</h2><p>就像之前说的，我们这次会直接在Swift Playground中开发。在Playground中，我们可以借助<code>XCPlayground</code> module 和 <code>XCPShowView</code>方法，直接在Assistant Editor中渲染任何view。我们需要打开playground的File Inspector (⌥-⌘-1)。在File Inspector中的Playground Settings中勾选”Run in Full Simulator”。现在关闭File Inspector (⌥-⌘-0) ，打开Assistant Editor (⌥-⌘-⏎)。<br><img src="http://ilya.puchka.me/content/images/2015/Apr/checkmark.png" alt=""></p>
+<blockquote>
+<p>译注：Xcode8已经没有且不需要这个设置。使用<code>PlaygroundSupport</code>替代<code>XCPlayground</code>，见下面的代码。</p>
+</blockquote>
+<p>最近我也写了一个关于playground这个功能的<a href="http://ilya.puchka.me/quick-overview-of-swift-playgrounds-in-ios-simulator/" target="_blank" rel="external">简介</a></p>
+<h2 id="创建主view"><a href="#创建主view" class="headerlink" title="创建主view"></a>创建主view</h2><p>我们需要创建一个主view来在Assistant Editor中显示。定义一个方法来创建并返回这个view。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">createView</span><span class="params">()</span></span> -&gt; <span class="type">UIView</span> &#123;  </div><div class="line">	<span class="keyword">let</span> view = <span class="type">UIView</span>(frame: <span class="type">UIScreen</span>.main.bounds)</div><div class="line">	view.backgroundColor = <span class="type">UIColor</span>.green</div><div class="line">	<span class="keyword">return</span> view</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在我们调用下面的代码， Assistant Editor中应该就能显示了。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> UIKit  </div><div class="line"><span class="keyword">import</span> PlaygroundSupport</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">createView</span><span class="params">()</span></span> -&gt; <span class="type">UIView</span> &#123;  </div><div class="line">...</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="type">PlaygroundPage</span>.current.liveView = createView()</div></pre></td></tr></table></figure>
+<p>你看到的应该和下面的差不多：<br><img src="http://ilya.puchka.me/content/images/2015/Apr/Assistant-Editor.png" alt=""></p>
+<h2 id="控件的接口"><a href="#控件的接口" class="headerlink" title="控件的接口"></a>控件的接口</h2><p>之前提到了，我们的控件要能设置收起模式显示的最大行数、文字按钮的内容，以及打开关闭收起模式的标志位。现在我们定义控件的这些接口。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ReadMoreTextView</span>: <span class="title">UITextView</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">var</span> maximumNumberOfLines: <span class="type">Int</span> = <span class="number">0</span></div><div class="line">    <span class="keyword">var</span> trimText: <span class="type">NSString</span>?</div><div class="line">    <span class="keyword">var</span> shouldTrim: <span class="type">Bool</span> = <span class="literal">false</span></div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>改变上面的这些属性都会让text view更新布局，所以还需要添加一些property observer .</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> maximumNumberOfLines: <span class="type">Int</span> = <span class="number">0</span> &#123;  </div><div class="line">    <span class="keyword">didSet</span> &#123; setNeedsLayout() &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> trimText: <span class="type">NSString</span>? &#123;  </div><div class="line">    <span class="keyword">didSet</span> &#123; setNeedsLayout() &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> shouldTrim: <span class="type">Bool</span> = <span class="literal">false</span> &#123;  </div><div class="line">    <span class="keyword">didSet</span> &#123; setNeedsLayout() &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">needsTrim</span><span class="params">()</span></span> -&gt; <span class="type">Bool</span> &#123;  </div><div class="line">    <span class="keyword">return</span> shouldTrim &amp;&amp; trimText != <span class="literal">nil</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">layoutSubviews</span><span class="params">()</span></span> &#123;  </div><div class="line">    <span class="keyword">super</span>.layoutSubviews()</div><div class="line">    needsTrim() ? updateText() : resetText()</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">updateText</span><span class="params">()</span></span> &#123;  </div><div class="line">    <span class="comment">//update text view</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">resetText</span><span class="params">()</span></span> &#123;  </div><div class="line">    <span class="comment">//reset text view</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="将控件添加到主view"><a href="#将控件添加到主view" class="headerlink" title="将控件添加到主view"></a>将控件添加到主view</h2><p>我们需要在Assistant Editor中看下text view是什么样的，所以需要在主view中添加text view。修改<code>createView</code>方法来传入一个text view作为参数 ：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">createView</span><span class="params">(textView: TextView)</span></span> -&gt; <span class="type">UIView</span> &#123;</div><div class="line"></div><div class="line">    <span class="keyword">let</span> view = <span class="type">UIView</span>(frame: <span class="type">UIScreen</span>.mainScreen().bounds)</div><div class="line">    view.backgroundColor = <span class="type">UIColor</span>.green</div><div class="line">    textView.translatesAutoresizingMaskIntoConstraints = <span class="literal">false</span></div><div class="line">    view.addSubview(textView)</div><div class="line">    <span class="keyword">let</span> metrics = [<span class="string">"padding"</span>: <span class="number">20</span>]</div><div class="line"></div><div class="line">    view.addConstraints(<span class="type">NSLayoutConstraint</span></div><div class="line">        .constraintsWithVisualFormat(<span class="string">"V:|-padding-[textView]-padding-|"</span>, options: .alignAllLeft,</div><div class="line">            metrics: metrics,</div><div class="line">            views: [<span class="string">"textView"</span>: textView]))</div><div class="line"></div><div class="line">    view.addConstraints(<span class="type">NSLayoutConstraint</span></div><div class="line">    .constraintsWithVisualFormat(<span class="string">"H:|-padding-[textView]-padding-|"</span>, options: .alignAllLeft,</div><div class="line">        metrics: metrics,</div><div class="line">        views: [<span class="string">"textView"</span>: textView]))</div><div class="line"></div><div class="line">    <span class="keyword">return</span> view</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">let</span> textView = <span class="type">ReadMoreTextView</span>()</div><div class="line"></div><div class="line">textView.text = <span class="string">"Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda."</span></div><div class="line"></div><div class="line">textView.maximumNumberOfLines = <span class="number">3</span>  </div><div class="line">textView.shouldTrim = <span class="literal">true</span>  </div><div class="line">textView.trimText = <span class="string">"Read more"</span></div><div class="line"></div><div class="line"><span class="type">XCPShowView</span>(<span class="string">"view"</span>, createView(textView))</div><div class="line">```  </div><div class="line"></div><div class="line">## 扩展<span class="type">TextKit</span></div><div class="line">在收起文字之前，我们首先需要找到在最大行数内能显示的文字范围。我们使用<span class="type">TextKit</span>来做这个。<span class="type">UITextView</span>已经使用<span class="type">TextKit</span>来渲染文字，并且已经内建了如text container、text storage 和 layout manager等组件。这里不会详细讲解<span class="type">TextKit</span>，更多细节可以查看[objc.io](http:<span class="comment">//www.objc.io/issue-5/getting-to-know-textkit.html) 或者[文档](https://developer.apple.com/library/ios/documentation/StringsTextFonts/Conceptual/TextAndWebiPhoneOS/CustomTextProcessing/CustomTextProcessing.html)</span></div><div class="line"></div><div class="line">在<span class="type">NSLayoutManager</span>的扩展中，我们会定义两个简单的方法，一个是找到适合text container的字符范围，一个是找到这些字符的矩形边框。</div><div class="line"></div><div class="line">```swift</div><div class="line"><span class="class"><span class="keyword">extension</span> <span class="title">NSLayoutManager</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">func</span> <span class="title">characterRangeThatFits</span><span class="params">(textContainer: NSTextContainer)</span></span> -&gt; <span class="type">NSRange</span> &#123;</div><div class="line">        <span class="keyword">var</span> rangeThatFits = <span class="keyword">self</span>.glyphRangeForTextContainer(textContainer)</div><div class="line">        rangeThatFits = <span class="keyword">self</span>.characterRangeForGlyphRange(rangeThatFits, actualGlyphRange: <span class="literal">nil</span>)</div><div class="line">        <span class="keyword">return</span> rangeThatFits</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">func</span> <span class="title">boundingRectForCharacterRange</span><span class="params">(range: NSRange, inTextContainer textContainer: NSTextContainer)</span></span> -&gt; <span class="type">CGRect</span> &#123;</div><div class="line">        <span class="keyword">let</span> glyphRange = <span class="keyword">self</span>.glyphRangeForCharacterRange(range, actualCharacterRange: <span class="literal">nil</span>)</div><div class="line">        <span class="keyword">let</span> boundingRect = <span class="keyword">self</span>.boundingRectForGlyphRange(glyphRange, inTextContainer: textContainer)</div><div class="line">        <span class="keyword">return</span> boundingRect</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="裁剪文字"><a href="#裁剪文字" class="headerlink" title="裁剪文字"></a>裁剪文字</h2><p>在更新和裁剪文字之前，我们需要确保当不用裁剪时可以恢复text view。所以我们需要在私有属性中保存text和 attributed text。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">var</span> originalText: <span class="type">String</span>!</div><div class="line"></div><div class="line"><span class="keyword">override</span> <span class="keyword">var</span> text: <span class="type">String</span>! &#123;  </div><div class="line">    <span class="keyword">didSet</span> &#123;</div><div class="line">        originalText = text</div><div class="line">        originalAttributedText = <span class="literal">nil</span></div><div class="line">        <span class="keyword">if</span> needsTrim() &#123; updateText() &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">private</span> <span class="keyword">var</span> originalAttributedText: <span class="type">NSAttributedString</span>!</div><div class="line"></div><div class="line"><span class="keyword">override</span> <span class="keyword">var</span> attributedText: <span class="type">NSAttributedString</span>! &#123;  </div><div class="line">    <span class="keyword">didSet</span> &#123;</div><div class="line">        originalAttributedText = attributedText</div><div class="line">        originalText = <span class="literal">nil</span></div><div class="line">        <span class="keyword">if</span> needsTrim() &#123; updateText() &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>当我们不需要裁剪文字时，将text view重置为展开模式，并且恢复其中的文字。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">resetText</span><span class="params">()</span></span> &#123;  </div><div class="line">    textContainer.maximumNumberOfLines = <span class="number">0</span></div><div class="line">    <span class="keyword">if</span> originalText != <span class="literal">nil</span> &#123;</div><div class="line">        textStorage.replaceCharactersInRange(<span class="type">NSMakeRange</span>(<span class="number">0</span>, <span class="built_in">countElements</span>(text!)), withString: originalText)</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span> <span class="keyword">if</span> originalAttributedText != <span class="literal">nil</span> &#123;</div><div class="line">        textStorage.replaceCharactersInRange(<span class="type">NSMakeRange</span>(<span class="number">0</span>, <span class="built_in">countElements</span>(text!)), withAttributedString: originalAttributedText)</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>现在我们添加一个方法来找到需要替换成“Read more”的文字的范围。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">func</span> <span class="title">rangeToReplaceWithTrimText</span><span class="params">()</span></span> -&gt; <span class="type">NSRange</span> &#123;  </div><div class="line">    <span class="keyword">let</span> emptyRange = <span class="type">NSMakeRange</span>(<span class="type">NSNotFound</span>, <span class="number">0</span>)</div><div class="line"></div><div class="line">    <span class="keyword">var</span> rangeToReplace = layoutManager.characterRangeThatFits(textContainer)</div><div class="line">    <span class="keyword">if</span> <span class="type">NSMaxRange</span>(rangeToReplace) == originalTextLength() &#123;</div><div class="line">        rangeToReplace = emptyRange</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span> &#123;</div><div class="line">        rangeToReplace.location = <span class="type">NSMaxRange</span>(rangeToReplace) - trimText!.length - <span class="number">4</span></div><div class="line">        <span class="keyword">if</span> rangeToReplace.location &lt; <span class="number">0</span> &#123;</div><div class="line">            rangeToReplace = emptyRange</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">else</span> &#123;</div><div class="line">            rangeToReplace.length = textStorage.length - rangeToReplace.location</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> rangeToReplace</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">private</span> <span class="keyword">var</span> _originalTextLength: <span class="type">Int</span> &#123;  </div><div class="line">    <span class="keyword">get</span> &#123;</div><div class="line">        <span class="keyword">if</span> originalText != <span class="literal">nil</span> &#123;</div><div class="line">            <span class="keyword">return</span> <span class="built_in">countElements</span>(originalText!)</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">else</span>  <span class="keyword">if</span> originalAttributedText != <span class="literal">nil</span> &#123;</div><div class="line">            <span class="keyword">return</span> originalAttributedText!.length</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> <span class="number">0</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在这我们增加了4个文字长度来添加“…”作为文字按钮的前缀。如果不需要裁剪文字或者字数比较少又或者<code>maximumNumberOfLines</code>非常大，就直接返回一个空范围。</p>
+<p>最后我们加上裁剪文字的代码：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">updateText</span><span class="params">()</span></span> &#123;  </div><div class="line">    textContainer.maximumNumberOfLines = maximumNumberOfLines</div><div class="line">    layoutManager.invalidateLayoutForCharacterRange(layoutManager.characterRangeThatFits(textContainer), actualCharacterRange: <span class="literal">nil</span>)</div><div class="line">    textContainer.size = <span class="type">CGSizeMake</span>(bounds.size.width, <span class="type">CGFloat</span>.<span class="built_in">max</span>)</div><div class="line"></div><div class="line">    <span class="keyword">var</span> range = rangeToReplaceWithTrimText()</div><div class="line">    <span class="keyword">if</span> range.location != <span class="type">NSNotFound</span> &#123;</div><div class="line">        textStorage.replaceCharactersInRange(range, withString: <span class="string">"... "</span>.stringByAppendingString(trimText!))</div><div class="line">    &#125;</div><div class="line">    invalidateIntrinsicContentSize()</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>首先我们设置text container的最大行数和大小，这样text container就有和text view一样的宽和无限的高。我们还要重置布局信息来正确计算需要裁剪的文字范围。然后我们找到需要替换为“Read more”的文字范围，如果范围不是空的，我们就把它替换成“…+<code>trimText</code>”。</p>
+<h2 id="自动布局"><a href="#自动布局" class="headerlink" title="自动布局"></a>自动布局</h2><p>当text view在裁剪模式时，需要折叠内容，变得比正常模式更小。这需要重新定义text view的intrinsic content size。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">intrinsicContentSize</span><span class="params">()</span></span> -&gt; <span class="type">CGSize</span> &#123;  </div><div class="line">    textContainer.size = <span class="type">CGSizeMake</span>(bounds.size.width, <span class="type">CGFloat</span>.<span class="built_in">max</span>)</div><div class="line">    <span class="keyword">var</span> intrinsicContentSize = layoutManager.boundingRectForGlyphRange(layoutManager.glyphRangeForTextContainer(textContainer), inTextContainer: textContainer).size</div><div class="line">    intrinsicContentSize.width = <span class="type">UIViewNoIntrinsicMetric</span></div><div class="line">    intrinsicContentSize.height += (textContainerInset.top + textContainerInset.bottom)</div><div class="line">    <span class="keyword">return</span> intrinsicContentSize</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>首先设置text container的大小，同样也是无限高度。然后找到text container中所有文字的位置，取其大小。我们不需要宽度方向的intrinsic size，所以设置为<code>UIViewNoIntrinsicMetric</code>。然后我们在高度上加上text container的上下边距。</p>
+<p>我们还需要在createView中更新垂直约束，并在更新文字时重置intrinsic size。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">updateText</span><span class="params">()</span></span> &#123;  </div><div class="line">    ...</div><div class="line">    invalidateIntrinsicContentSize()</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">resetText</span><span class="params">()</span></span> &#123;  </div><div class="line">    ...</div><div class="line">    invalidateIntrinsicContentSize()</div><div class="line">&#125;</div><div class="line"></div><div class="line">...</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">createView</span><span class="params">(textView: UITextView)</span></span> -&gt; <span class="type">UIView</span> &#123;  </div><div class="line">    ...</div><div class="line">    view.addConstraints(<span class="type">NSLayoutConstraint</span></div><div class="line">        .constraintsWithVisualFormat(<span class="string">"V:|-padding-[textView]-(&gt;=padding)-|"</span>,</div><div class="line">            options: <span class="literal">nil</span>,</div><div class="line">            metrics: metrics,</div><div class="line">            views: [<span class="string">"textView"</span>: textView]))</div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p>尽管我们已经完成了所有工作，但是你在Assistant Editor中看到的可能和下面的差不多：<br><img src="http://ilya.puchka.me/content/images/2015/Apr/UITextView-bug.png" alt=""></p>
+<p>这肯定不是我们想要的。我们需要禁止text view滚动和编辑来解决这个问题。<br>现在一切应该都正常了，应该能看到和下面类似的：<br><img src="http://ilya.puchka.me/content/images/2015/Apr/TextView.png" alt=""></p>
+<h2 id="处理点击"><a href="#处理点击" class="headerlink" title="处理点击"></a>处理点击</h2><p>接下来当我们点击“Read more”时，text view会切换到展开模式。我们可以在hitTest中检查点击的位置，如果需要的话切换到展开模式。</p>
+<p>我们需要一个函数来检测是否点击到了<code>trimText</code>：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> trimTextRangePadding: <span class="type">UIEdgeInsets</span> = <span class="type">UIEdgeInsetsZero</span></div><div class="line"></div><div class="line"><span class="keyword">private</span> <span class="function"><span class="keyword">func</span> <span class="title">pointInTrimTextRange</span><span class="params">(point: CGPoint)</span></span> -&gt; <span class="type">Bool</span> &#123;  </div><div class="line">    <span class="keyword">let</span> offset = <span class="type">CGPointMake</span>(textContainerInset.<span class="keyword">left</span>, textContainerInset.top)</div><div class="line">    <span class="keyword">var</span> boundingRect = layoutManager.boundingRectForCharacterRange(trimTextRange(), inTextContainer: textContainer, textContainerOffset: offset)</div><div class="line">    boundingRect = <span class="type">CGRectOffset</span>(boundingRect, textContainerInset.<span class="keyword">left</span>, textContainerInset.top)</div><div class="line">    boundingRect = <span class="type">CGRectInset</span>(boundingRect, -(trimTextRangePadding.<span class="keyword">left</span> + trimTextRangePadding.<span class="keyword">right</span>), -(trimTextRangePadding.top + trimTextRangePadding.bottom))</div><div class="line">    <span class="keyword">return</span> <span class="type">CGRectContainsPoint</span>(boundingRect, point)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p>最开始hitTest方法有个错误，当处理一个touch event时，系统会调用几次hitTest方法。因此这个方法不应该有任何副作用。</p>
+</blockquote>
+<h2 id="Interface-Builder"><a href="#Interface-Builder" class="headerlink" title="Interface Builder"></a>Interface Builder</h2><p>这是最简单的部分了，因为我们只需要添加@IBDesignable 和 @IBInspectable就可以在 Interface Builder中的Attributes Inspector 设置这些值。我们不需要定义<code>prepareForInterfaceBuilder</code>，因为当改变<code>maximumNumberOfLines</code>或者其他属性时，已经更新布局了。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@IBDesignable</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ReadMoreTextView</span>: <span class="title">UITextView</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@IBInspectable</span></div><div class="line">    <span class="keyword">var</span> maximumNumberOfLines: <span class="type">Int</span> = <span class="number">0</span></div><div class="line"></div><div class="line">    <span class="meta">@IBInspectable</span></div><div class="line">    <span class="keyword">var</span> trimText: <span class="type">NSString</span>?</div><div class="line"></div><div class="line">    <span class="meta">@IBInspectable</span></div><div class="line">    <span class="keyword">var</span> shouldTrim: <span class="type">Bool</span> = <span class="literal">false</span></div><div class="line"></div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>我们已经用Swift和TextKit开发了一个自定义text view。你可以扩展来添加例如attributed trim text属性，这样用户就能自定义外观了。你也看到了如何在playground中开发控件。在这之后你可以把代码移到单独的源文件，引入到你的工程。尽管playground缺少互动（比如收不到touch event），有时更新不是很及时，但是不用新建工程，只用playground还是能做很多事情。</p>
+<p>文章中的源码可以在<a href="https://github.com/ilyapuchka/ReadMoreTextView" target="_blank" rel="external">Github</a>上找到。</p>
+
+  </div>
+</article>
+
+
+
+    </div>
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#创建playground"><span class="toc-number">1.</span> <span class="toc-text">创建playground</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建主view"><span class="toc-number">2.</span> <span class="toc-text">创建主view</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#控件的接口"><span class="toc-number">3.</span> <span class="toc-text">控件的接口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#将控件添加到主view"><span class="toc-number">4.</span> <span class="toc-text">将控件添加到主view</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#裁剪文字"><span class="toc-number">5.</span> <span class="toc-text">裁剪文字</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#自动布局"><span class="toc-number">6.</span> <span class="toc-text">自动布局</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#初始化"><span class="toc-number">7.</span> <span class="toc-text">初始化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#处理点击"><span class="toc-number">8.</span> <span class="toc-text">处理点击</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Interface-Builder"><span class="toc-number">9.</span> <span class="toc-text">Interface Builder</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结论"><span class="toc-number">10.</span> <span class="toc-text">结论</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/"><i class="fa fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&text=在Swift中自定义UITextView"><i class="fa fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&title=在Swift中自定义UITextView"><i class="fa fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&is_video=false&description=在Swift中自定义UITextView"><i class="fa fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=在Swift中自定义UITextView&body=Check out this article: http://yoursite.com/2017/03/03/在Swift中自定义UITextView/"><i class="fa fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&title=在Swift中自定义UITextView"><i class="fa fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&title=在Swift中自定义UITextView"><i class="fa fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&title=在Swift中自定义UITextView"><i class="fa fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&title=在Swift中自定义UITextView"><i class="fa fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=http://yoursite.com/2017/03/03/在Swift中自定义UITextView/&name=在Swift中自定义UITextView&description="><i class="fa fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      <ul>
+        <li id="toc"><a class="icon" href="#" onclick='$("#toc-footer").toggle();return false;'><i class="fa fa-list fa-lg" aria-hidden="true"></i> TOC</a></li>
+        <li id="share"><a class="icon" href="#" onclick='$("#share-footer").toggle();return false;'><i class="fa fa-share-alt fa-lg" aria-hidden="true"></i> Share</a></li>
+        <li id="top" style="display:none"><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a></li>
+        <li id="menu"><a class="icon" href="#" onclick='$("#nav-footer").toggle();return false;'><i class="fa fa-bars fa-lg" aria-hidden="true"></i> Menu</a></li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+    
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2017 BenBeng
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="http://github.com/probberechts">Projects</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    <script src="/lib/justified-gallery/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- Google Analytics -->
+
+<!-- Disqus Comments -->
+
+
+</body>
+</html>
